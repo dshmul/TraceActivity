@@ -1,23 +1,17 @@
-// Example Wifi interceitng capability (https://blog.podkalicki.com/esp32-wifi-sniffer/)
-
 #include <Arduino.h>
-// #include "freertos/FreeRTOS.h"
-#include "esp_wifi.h"
 #include "esp_wifi_types.h"
-#include "esp_system.h"
-#include "esp_event.h"
-#include "esp_event_loop.h"
-// #include "nvs_flash.h"
-// #include "driver/gpio.h"
+#include "esp_wifi.h"
+#include "esp_err.h"
 
-#define LED_GPIO_PIN                     5
+#define PROBE_REQ_SUBTYPE "0100"
+
+// recycled
 #define WIFI_CHANNEL_SWITCH_INTERVAL  (500)
 #define WIFI_CHANNEL_MAX               (13)
 
-uint8_t level = 0, channel = 1;
+uint8_t channel = 1;
 
-static wifi_country_t wifi_country = {.cc="US", .schan = 1, .nchan = 13}; //Most recent esp32 library struct
-
+// recycled
 typedef struct {
   unsigned frame_ctrl:16;
   unsigned duration_id:16;
@@ -29,98 +23,72 @@ typedef struct {
 } wifi_ieee80211_mac_hdr_t;
 
 typedef struct {
-  wifi_ieee80211_mac_hdr_t hdr;
+  wifi_ieee80211_mac_hdr_t header;
   uint8_t payload[0]; /* network data ended with 4 bytes csum (CRC32) */
 } wifi_ieee80211_packet_t;
 
-static esp_err_t event_handler(void *ctx, system_event_t *event);
-static void wifi_sniffer_init(void);
-static void wifi_sniffer_set_channel(uint8_t channel);
-static const char *wifi_sniffer_packet_type2str(wifi_promiscuous_pkt_type_t type);
-static void wifi_sniffer_packet_handler(void *buff, wifi_promiscuous_pkt_type_t type);
+static void wifi_init();
+static void processMetadata(wifi_promiscuous_pkt_t *packet);
+static void wifi_packet_handler(void *packet_buff, wifi_promiscuous_pkt_type_t packet_type); // wifi_promiscuous_cb_t params
+static void wifi_set_channel(uint8_t wifi_channel);
 
-esp_err_t event_handler(void *ctx, system_event_t *event)
+void wifi_init()
 {
-  return ESP_OK;
+    wifi_init_config_t default_config = WIFI_INIT_CONFIG_DEFAULT();
+    ESP_ERROR_CHECK(esp_wifi_init(&default_config)); // init wifi resources
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA)); // set wifi station mode
+    ESP_ERROR_CHECK(esp_wifi_start()); // start station
+    wifi_set_channel(1); // set wifi channel to 1
+    ESP_ERROR_CHECK(esp_wifi_set_promiscuous(true)); // enter promiscuous mode  
+    ESP_ERROR_CHECK(esp_wifi_set_promiscuous_rx_cb(&wifi_packet_handler)); // set packet handler callback
 }
 
-void wifi_sniffer_init(void)
+void wifi_set_channel(uint8_t channel)
 {
-  // nvs_flash_init();
-  // tcpip_adapter_init();
-  ESP_ERROR_CHECK( esp_event_loop_init(event_handler, NULL) );
-  wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-  ESP_ERROR_CHECK( esp_wifi_init(&cfg) );
-  ESP_ERROR_CHECK( esp_wifi_set_country(&wifi_country) ); /* set country for channel range [1, 13] */
-  ESP_ERROR_CHECK( esp_wifi_set_storage(WIFI_STORAGE_RAM) ); // either RAM or FLASH
-  ESP_ERROR_CHECK( esp_wifi_set_mode(WIFI_MODE_NULL) ); // sets station mode - enable device connection to existing network
-  ESP_ERROR_CHECK( esp_wifi_start() ); // start esp station mode
-  esp_wifi_set_promiscuous(true); 
-  esp_wifi_set_promiscuous_rx_cb(&wifi_sniffer_packet_handler); // set promiscuous receive callback function
+    ESP_ERROR_CHECK(esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE));
 }
 
-void wifi_sniffer_set_channel(uint8_t channel)
+void wifi_packet_handler(void *packet_buff, wifi_promiscuous_pkt_type_t packet_type)
 {
-  esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
+    // TODO: extract packet subtype
+    // uint16_t frame_ctrl 
+    // uint8_t packet_subtype
+
+    // if (packet_type != WIFI_PKT_MGMT && packet_subtype != PROBE_REQ_SUBTYPE)
+    if (packet_type != WIFI_PKT_MGMT)
+    {
+        return;
+    }
+
+    wifi_promiscuous_pkt_t *packet = (wifi_promiscuous_pkt_t *)packet_buff;
+    processMetadata(packet);
 }
 
-const char * wifi_sniffer_packet_type2str(wifi_promiscuous_pkt_type_t type)
+static void processMetadata(wifi_promiscuous_pkt_t *packet)
 {
-  switch(type) {
-  case WIFI_PKT_MGMT: return "MGMT";
-  case WIFI_PKT_DATA: return "DATA";
-  default:  
-  case WIFI_PKT_MISC: return "MISC";
-  }
+    wifi_ieee80211_packet_t *payload = (wifi_ieee80211_packet_t *)packet->payload;
+    wifi_ieee80211_mac_hdr_t *header = &payload->header;
+
+    printf("CHAN=%02d, RSSI=%02d,"
+        " Request MAC=%02x:%02x:%02x:%02x:%02x:%02x",
+        packet->rx_ctrl.channel,
+        packet->rx_ctrl.rssi,
+        header->addr2[0],header->addr2[1],header->addr2[2],
+        header->addr2[3],header->addr2[4],header->addr2[5]
+    );
 }
 
-void wifi_sniffer_packet_handler(void* buff, wifi_promiscuous_pkt_type_t type)
+void setup()
 {
-  if (type != WIFI_PKT_MGMT)
-    return;
-
-  const wifi_promiscuous_pkt_t *ppkt = (wifi_promiscuous_pkt_t *)buff;
-  const wifi_ieee80211_packet_t *ipkt = (wifi_ieee80211_packet_t *)ppkt->payload;
-  const wifi_ieee80211_mac_hdr_t *hdr = &ipkt->hdr;
-
-  printf("PACKET TYPE=%s, CHAN=%02d, RSSI=%02d,"
-    " ADDR1=%02x:%02x:%02x:%02x:%02x:%02x,"
-    " ADDR2=%02x:%02x:%02x:%02x:%02x:%02x,"
-    " ADDR3=%02x:%02x:%02x:%02x:%02x:%02x\n",
-    wifi_sniffer_packet_type2str(type),
-    ppkt->rx_ctrl.channel,
-    ppkt->rx_ctrl.rssi,
-    /* ADDR1 */
-    hdr->addr1[0],hdr->addr1[1],hdr->addr1[2],
-    hdr->addr1[3],hdr->addr1[4],hdr->addr1[5],
-    /* ADDR2 */
-    hdr->addr2[0],hdr->addr2[1],hdr->addr2[2],
-    hdr->addr2[3],hdr->addr2[4],hdr->addr2[5],
-    /* ADDR3 */
-    hdr->addr3[0],hdr->addr3[1],hdr->addr3[2],
-    hdr->addr3[3],hdr->addr3[4],hdr->addr3[5]
-  );
+    Serial.begin(115200);
+    delay(10);
+    
+    wifi_init();
 }
 
-// the setup function runs once when you press reset or power the board
-void setup() {
-  // initialize digital pin 5 as an output.
-  Serial.begin(115200);
-  delay(10);
-  wifi_sniffer_init();
-  pinMode(LED_GPIO_PIN, OUTPUT);
-}
-
-// the loop function runs over and over again forever
-void loop() {
-  //Serial.print("inside loop");
-  delay(1000); // wait for a second
-  
-  if (digitalRead(LED_GPIO_PIN) == LOW)
-    digitalWrite(LED_GPIO_PIN, HIGH);
-  else
-    digitalWrite(LED_GPIO_PIN, LOW);
-  vTaskDelay(WIFI_CHANNEL_SWITCH_INTERVAL / portTICK_PERIOD_MS); // block callback?
-  wifi_sniffer_set_channel(channel); 
-  channel = (channel % WIFI_CHANNEL_MAX) + 1;
+void loop()
+{
+    vTaskDelay(WIFI_CHANNEL_SWITCH_INTERVAL / portTICK_PERIOD_MS); // block callback?
+    wifi_set_channel(channel); 
+    channel = (channel % WIFI_CHANNEL_MAX) + 1;
 }
