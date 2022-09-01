@@ -7,7 +7,7 @@
 #include "esp_system.h"
 #include "esp_event.h"
 #include "esp_event_loop.h"
-#include "nvs_flash.h"
+// #include "nvs_flash.h"
 // #include "driver/gpio.h"
 
 #define LED_GPIO_PIN                     5
@@ -16,7 +16,7 @@
 
 uint8_t level = 0, channel = 1;
 
-static wifi_country_t wifi_country = {.cc="CN", .schan = 1, .nchan = 13}; //Most recent esp32 library struct
+static wifi_country_t wifi_country = {.cc="US", .schan = 1, .nchan = 13}; //Most recent esp32 library struct
 
 typedef struct {
   unsigned frame_ctrl:16;
@@ -46,17 +46,17 @@ esp_err_t event_handler(void *ctx, system_event_t *event)
 
 void wifi_sniffer_init(void)
 {
-  nvs_flash_init();
-  tcpip_adapter_init();
+  // nvs_flash_init();
+  // tcpip_adapter_init();
   ESP_ERROR_CHECK( esp_event_loop_init(event_handler, NULL) );
   wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
   ESP_ERROR_CHECK( esp_wifi_init(&cfg) );
   ESP_ERROR_CHECK( esp_wifi_set_country(&wifi_country) ); /* set country for channel range [1, 13] */
-  ESP_ERROR_CHECK( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
-  ESP_ERROR_CHECK( esp_wifi_set_mode(WIFI_MODE_NULL) );
-  ESP_ERROR_CHECK( esp_wifi_start() );
-  esp_wifi_set_promiscuous(true);
-  esp_wifi_set_promiscuous_rx_cb(&wifi_sniffer_packet_handler);
+  ESP_ERROR_CHECK( esp_wifi_set_storage(WIFI_STORAGE_RAM) ); // either RAM or FLASH
+  ESP_ERROR_CHECK( esp_wifi_set_mode(WIFI_MODE_NULL) ); // sets station mode - enable device connection to existing network
+  ESP_ERROR_CHECK( esp_wifi_start() ); // start esp station mode
+  esp_wifi_set_promiscuous(true); 
+  esp_wifi_set_promiscuous_rx_cb(&wifi_sniffer_packet_handler); // set promiscuous receive callback function
 }
 
 void wifi_sniffer_set_channel(uint8_t channel)
@@ -120,7 +120,7 @@ void loop() {
     digitalWrite(LED_GPIO_PIN, HIGH);
   else
     digitalWrite(LED_GPIO_PIN, LOW);
-  vTaskDelay(WIFI_CHANNEL_SWITCH_INTERVAL / portTICK_PERIOD_MS);
-  wifi_sniffer_set_channel(channel);
+  vTaskDelay(WIFI_CHANNEL_SWITCH_INTERVAL / portTICK_PERIOD_MS); // block callback?
+  wifi_sniffer_set_channel(channel); 
   channel = (channel % WIFI_CHANNEL_MAX) + 1;
 }
