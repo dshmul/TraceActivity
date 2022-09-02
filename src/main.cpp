@@ -3,13 +3,14 @@
 #include "esp_wifi.h"
 #include "esp_err.h"
 
-#define PROBE_REQ_SUBTYPE "0100"
+#define PROBE_REQ_SUBTYPE 0b0100
 
 // recycled
 #define WIFI_CHANNEL_SWITCH_INTERVAL  (500)
-#define WIFI_CHANNEL_MAX               (13)
-
+#define WIFI_CHANNEL_MAX               (11) // US has 11 channels
+ 
 uint8_t channel = 1;
+uint16_t probe_req = 0b0100;
 
 // recycled
 typedef struct {
@@ -50,10 +51,6 @@ void wifi_set_channel(uint8_t channel)
 
 void wifi_packet_handler(void *packet_buff, wifi_promiscuous_pkt_type_t packet_type)
 {
-    // TODO: extract packet subtype
-    // uint16_t frame_ctrl 
-    // uint8_t packet_subtype
-
     // if (packet_type != WIFI_PKT_MGMT && packet_subtype != PROBE_REQ_SUBTYPE)
     if (packet_type != WIFI_PKT_MGMT)
     {
@@ -61,6 +58,19 @@ void wifi_packet_handler(void *packet_buff, wifi_promiscuous_pkt_type_t packet_t
     }
 
     wifi_promiscuous_pkt_t *packet = (wifi_promiscuous_pkt_t *)packet_buff;
+    // TODO: extract packet subtype?
+    // wifi_ieee80211_packet_t *payload = (wifi_ieee80211_packet_t *)packet->payload;
+    // wifi_ieee80211_mac_hdr_t *header = &payload->header;
+    // uint16_t frameCtrl = header->frame_ctrl;
+    // uint16_t subtype = (frameCtrl & 0b0000000011110000) >> 4;
+    // Serial.println(PROBE_REQ_SUBTYPE);
+    // Serial.println(probe_req);
+    // Serial.println(subtype);
+    // if (subtype != PROBE_REQ_SUBTYPE) 
+    // {
+    //     return;
+    // }
+
     processMetadata(packet);
 }
 
@@ -70,7 +80,7 @@ static void processMetadata(wifi_promiscuous_pkt_t *packet)
     wifi_ieee80211_mac_hdr_t *header = &payload->header;
 
     printf("CHAN=%02d, RSSI=%02d,"
-        " Request MAC=%02x:%02x:%02x:%02x:%02x:%02x",
+        " Request MAC=%02x:%02x:%02x:%02x:%02x:%02x\n",
         packet->rx_ctrl.channel,
         packet->rx_ctrl.rssi,
         header->addr2[0],header->addr2[1],header->addr2[2],
