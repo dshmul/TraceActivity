@@ -10,7 +10,6 @@
 #define WIFI_CHANNEL_MAX               (11) // US has 11 channels
  
 uint8_t channel = 1;
-uint16_t probe_req = 0b0100;
 
 // recycled
 typedef struct {
@@ -51,25 +50,16 @@ void wifi_set_channel(uint8_t channel)
 
 void wifi_packet_handler(void *packet_buff, wifi_promiscuous_pkt_type_t packet_type)
 {
-    // if (packet_type != WIFI_PKT_MGMT && packet_subtype != PROBE_REQ_SUBTYPE)
-    if (packet_type != WIFI_PKT_MGMT)
+    wifi_promiscuous_pkt_t *packet = (wifi_promiscuous_pkt_t *)packet_buff;
+    wifi_ieee80211_packet_t *payload = (wifi_ieee80211_packet_t *)packet->payload;
+    wifi_ieee80211_mac_hdr_t *header = &payload->header;
+    uint16_t frameCtrl = header->frame_ctrl;
+    uint16_t packet_subtype = (frameCtrl & 0b0000000011110000) >> 4; // little endian
+    
+    if (packet_type != WIFI_PKT_MGMT && packet_subtype != PROBE_REQ_SUBTYPE)
     {
         return;
     }
-
-    wifi_promiscuous_pkt_t *packet = (wifi_promiscuous_pkt_t *)packet_buff;
-    // TODO: extract packet subtype?
-    // wifi_ieee80211_packet_t *payload = (wifi_ieee80211_packet_t *)packet->payload;
-    // wifi_ieee80211_mac_hdr_t *header = &payload->header;
-    // uint16_t frameCtrl = header->frame_ctrl;
-    // uint16_t subtype = (frameCtrl & 0b0000000011110000) >> 4;
-    // Serial.println(PROBE_REQ_SUBTYPE);
-    // Serial.println(probe_req);
-    // Serial.println(subtype);
-    // if (subtype != PROBE_REQ_SUBTYPE) 
-    // {
-    //     return;
-    // }
 
     processMetadata(packet);
 }
