@@ -11,7 +11,7 @@
  
 uint8_t channel = 1;
 
-// recycled
+// recycled (https://blog.podkalicki.com/esp32-wifi-sniffer/)
 typedef struct {
   unsigned frame_ctrl:16;
   unsigned duration_id:16;
