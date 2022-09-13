@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <ctime>
 #include "esp_wifi_types.h"
 #include "esp_wifi.h"
 #include "esp_err.h"
@@ -69,12 +70,15 @@ static void processMetadata(wifi_promiscuous_pkt_t *packet)
     wifi_ieee80211_packet_t *payload = (wifi_ieee80211_packet_t *)packet->payload;
     wifi_ieee80211_mac_hdr_t *header = &payload->header;
 
+    time_t ttime = time(0);    
+
     printf("CHAN=%02d, RSSI=%02d,"
-        " Request MAC=%02x:%02x:%02x:%02x:%02x:%02x\n",
+        " Request MAC=%02x:%02x:%02x:%02x:%02x:%02x, %s",
         packet->rx_ctrl.channel,
         packet->rx_ctrl.rssi,
         header->addr2[0],header->addr2[1],header->addr2[2],
-        header->addr2[3],header->addr2[4],header->addr2[5]
+        header->addr2[3],header->addr2[4],header->addr2[5],
+        ctime(&ttime)
     );
 }
 
