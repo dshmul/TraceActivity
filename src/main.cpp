@@ -73,7 +73,8 @@ static void processMetadata(wifi_promiscuous_pkt_t *packet)
     time_t ttime = time(0);    
 
     printf("CHAN=%02d, RSSI=%02d,"
-        " Request MAC=%02x:%02x:%02x:%02x:%02x:%02x, %s",
+        " Request MAC=%02x:%02x:%02x:%02x:%02x:%02x," 
+        " Timestamp=%s",
         packet->rx_ctrl.channel,
         packet->rx_ctrl.rssi,
         header->addr2[0],header->addr2[1],header->addr2[2],
@@ -92,7 +93,7 @@ void setup()
 
 void loop()
 {
-    vTaskDelay(WIFI_CHANNEL_SWITCH_INTERVAL / portTICK_PERIOD_MS); // block callback?
+    vTaskDelay(WIFI_CHANNEL_SWITCH_INTERVAL / portTICK_PERIOD_MS); 
     wifi_set_channel(channel); 
     channel = (channel % WIFI_CHANNEL_MAX) + 1;
 }
