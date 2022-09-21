@@ -1,8 +1,7 @@
 # Python script used to load in ESP-32 data from serial port
 # data is then logged into a .csv file for further analysis 
 
-from webbrowser import get
-from xml.etree.ElementTree import tostring
+from datetime import datetime
 import serial
 import csv
 import time
@@ -38,7 +37,7 @@ current_file = ("Data_at_" + str(iteration) + ".csv")
 # Write Header Row
 with open (current_file, 'a', newline = '') as csvfile:
     writer = csv.writer(csvfile)
-    writer.writerow(["CHANNEL", "RSSI", "Request MAC"])
+    writer.writerow(["CHANNEL", "RSSI", "Request MAC", "Time Stamp"])
 
 # Use detect port functions
 foundPorts = get_ports()
@@ -58,6 +57,7 @@ while True:
     line = str(line).replace('Request MAC=', '')
     line = str(line).replace('b\'', '')
     line = str(line).replace('\\r\\n\'', '')
+    line = line + ", " + (str(datetime.now()))
 
     # Write to csv
     # Check time
@@ -69,7 +69,7 @@ while True:
         # Write Header Row
         with open (current_file, 'a', newline = '') as csvfile:
             writer = csv.writer(csvfile)
-            writer.writerow(["CHANNEL", "RSSI", "Request MAC"])
+            writer.writerow(["CHANNEL", "RSSI", "Request MAC", "Time Stamp"])
 
     # Output data to current .csv
     with open (current_file, 'a', newline = '') as csvfile:
