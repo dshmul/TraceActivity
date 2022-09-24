@@ -4,7 +4,9 @@
 #include <WiFiClientSecure.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
-#include "WiFi.h"
+#include <WiFi.h>
+#include <NTPClient.h>
+#include <WiFiUdp.h>
 #include "esp_wifi_types.h"
 #include "esp_wifi.h"
 #include "esp_err.h"
@@ -29,6 +31,9 @@ String id = WiFi.macAddress();
 
 WiFiClientSecure net = WiFiClientSecure();
 PubSubClient client(net);
+
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP);
 
 // recycled (https://blog.podkalicki.com/esp32-wifi-sniffer/)
 typedef struct {
@@ -140,19 +145,19 @@ static void processMetadata(wifi_promiscuous_pkt_t *packet)
 
     printf("CHAN=%02d, RSSI=%02d,"
         " Request MAC=%02x:%02x:%02x:%02x:%02x:%02x," 
-        " Timestamp=%s",
+        " Timestamp=%s\n",
         packet->rx_ctrl.channel,
         packet->rx_ctrl.rssi,
         header->addr2[0],header->addr2[1],header->addr2[2],
         header->addr2[3],header->addr2[4],header->addr2[5],
-        ctime(&ttime)
+        timeClient.getFormattedTime()
     );
 
     rssi = String(packet->rx_ctrl.rssi);
     mac = String(header->addr2[0], 16) + ":" + String(header->addr2[1], 16) + ":"
         + String(header->addr2[2], 16) + ":" + String(header->addr2[3], 16) + ":"
         + String(header->addr2[4], 16) + ":" + String(header->addr2[5], 16);
-    timestamp = String(ctime(&ttime));
+    timestamp = timeClient.getFormattedTime();
 
     publishMessage();
     client.loop();
@@ -190,6 +195,13 @@ void setup()
     
     connectAWS();
     wifi_init();
+
+    timeClient.begin();
+    timeClient.setTimeOffset(-18000); // set to EST = GMT - 5
+
+    while(!timeClient.update()) {
+        timeClient.forceUpdate();
+    }
 }
 
 void loop()
