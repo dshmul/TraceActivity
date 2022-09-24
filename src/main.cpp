@@ -105,7 +105,7 @@ void wifi_init()
     ESP_ERROR_CHECK(esp_wifi_init(&default_config)); // init wifi resources
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA)); // set wifi station mode
     ESP_ERROR_CHECK(esp_wifi_start()); // start station
-    wifi_set_channel(1); // set wifi channel to 1
+    // wifi_set_channel(1); // set wifi channel to 1
     ESP_ERROR_CHECK(esp_wifi_set_promiscuous(true)); // enter promiscuous mode  
     ESP_ERROR_CHECK(esp_wifi_set_promiscuous_rx_cb(&wifi_packet_handler)); // set packet handler callback
 }
