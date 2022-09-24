@@ -197,7 +197,7 @@ void setup()
     wifi_init();
 
     timeClient.begin();
-    timeClient.setTimeOffset(-18000); // set to EST = GMT - 5
+    timeClient.setTimeOffset(-14400); // set to EST = GMT - 4
 
     while(!timeClient.update()) {
         timeClient.forceUpdate();
