@@ -76,9 +76,7 @@ void wifi_packet_handler(void *packet_buff, wifi_promiscuous_pkt_type_t packet_t
 static void processMetadata(wifi_promiscuous_pkt_t *packet)
 {
     wifi_ieee80211_packet_t *payload = (wifi_ieee80211_packet_t *)packet->payload;
-    wifi_ieee80211_mac_hdr_t *header = &payload->header;
-
-    time_t ttime = time(0);    
+    wifi_ieee80211_mac_hdr_t *header = &payload->header;  
 
     printf("CHAN=%02d, RSSI=%02d,"
         " Request MAC=%02x:%02x:%02x:%02x:%02x:%02x\n",
