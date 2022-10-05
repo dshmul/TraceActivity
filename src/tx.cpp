@@ -90,6 +90,8 @@ void setup()
     Serial.begin(115200);
     SerialPort.begin(115200, SERIAL_8N1, RX_pin, TX_pin);   
     delay(10);
+
+    pinMode(LED, OUTPUT);
     
     connectAWS();
 }
@@ -121,6 +123,15 @@ void loop()
     if (storedData[0] == '{' && storedData[storedData.length() - 1] == '}')
     {
         publishMessage(storedData);
+
+        if (digitalRead(LED) == LOW)
+        {
+            digitalWrite(LED, HIGH);
+        }
+        else 
+        {
+            digitalWrite(LED, LOW);
+        }
     }
     storedData = "";
 }
