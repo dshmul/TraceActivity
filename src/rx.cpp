@@ -87,7 +87,7 @@ static void processMetadata(wifi_promiscuous_pkt_t *packet)
     );
 
     StaticJsonDocument<200> doc;
-    doc["chan"] = packet->rx_ctrl.channel;
+    // doc["chan"] = packet->rx_ctrl.channel;
     doc["mac"] = String(header->addr2[0], 16) + ":" + String(header->addr2[1], 16) + ":"
                + String(header->addr2[2], 16) + ":" + String(header->addr2[3], 16) + ":"
                + String(header->addr2[4], 16) + ":" + String(header->addr2[5], 16);
