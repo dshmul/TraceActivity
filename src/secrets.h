@@ -30,7 +30,7 @@ rqXRfboQnoZsG4q5WTP468SQvvG5
 #if DEVICE_NUMBER == 2
  
 #define SECRET
-#define THINGNAME "Trace1"                         //change this
+#define THINGNAME "ESP32"                         //change this
  
 const char WIFI_SSID[] = "2207";               //change this
 const char WIFI_PASSWORD[] = "welovesteve";           //change this
@@ -156,7 +156,7 @@ JZjPoS/ENXptJuc3r4QGP9OyC1II8lmlph2by9/8GslYPIfYkqLu8g==
 #elif DEVICE_NUMBER == 6
  
 #define SECRET
-#define THINGNAME "Trace1"                         //change this
+#define THINGNAME "Trace2"                         //change this
  
 const char WIFI_SSID[] = "2207";               //change this
 const char WIFI_PASSWORD[] = "welovesteve";           //change this
