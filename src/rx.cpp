@@ -7,6 +7,8 @@
 #include "esp_err.h"
 #include "config.h"
 
+#if (DEVICE_NUMBER == 1 || DEVICE_NUMBER == 3 || DEVICE_NUMBER == 5)
+
 #define WIFI_CHANNEL_SWITCH_INTERVAL  (500)
 #define WIFI_CHANNEL_MAX               (11) // US has 11 channels
 
@@ -115,3 +117,5 @@ void loop()
     wifi_set_channel(channel); 
     channel = (channel % WIFI_CHANNEL_MAX) + 1;
 }
+
+#endif

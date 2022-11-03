@@ -5,13 +5,24 @@
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 #include <WiFi.h>
+#include "config.h"
+
+#if (DEVICE_NUMBER == 2 || DEVICE_NUMBER == 4 || DEVICE_NUMBER == 6)
  
 #define AWS_IOT_PUBLISH_TOPIC   "esp32/pub"
 #define AWS_IOT_SUBSCRIBE_TOPIC "esp32/sub"
 
+#if DEVICE_NUMBER == 2
 #define LED 2 // ESP32 DevKit V1 onboard LED
 #define RX_pin 16
 #define TX_pin 17
+
+#else
+#define LED 2
+#define RX_pin 23
+#define TX_pin 22
+
+#endif
 
 HardwareSerial SerialPort(2);
  
@@ -135,3 +146,5 @@ void loop()
     }
     storedData = "";
 }
+
+#endif
