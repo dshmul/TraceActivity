@@ -1,4 +1,4 @@
-#define DEVICE_NUMBER 4
+#define DEVICE_NUMBER 6
 /*
     DEVICE_NUMBER Table
     1 = Blue Box RX
@@ -12,6 +12,6 @@
     #define ESP_LABEL "Dev1"
 #elif (DEVICE_NUMBER == 3 || DEVICE_NUMBER == 4)
     #define ESP_LABEL "Dev2"
-#else (DEVICE_NUMBER == 5 || DEVICE_NUMBER == 6)
+#else
     #define ESP_LABEL "Dev3"
 #endif
