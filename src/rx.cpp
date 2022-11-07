@@ -95,7 +95,7 @@ static void processMetadata(wifi_promiscuous_pkt_t *packet)
                + String(header->addr2[4], 16) + ":" + String(header->addr2[5], 16);
     doc["rssi"] = String(packet->rx_ctrl.rssi);;
     doc["label"] = ESP_LABEL;
-    doc["id"] = id;
+    doc["esp_id"] = id;
     char jsonBuffer[512];
     serializeJson(doc, jsonBuffer); 
 
