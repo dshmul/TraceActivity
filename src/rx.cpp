@@ -7,6 +7,8 @@
 #include "esp_err.h"
 #include "config.h"
 
+#if (DEVICE_NUMBER == 1 || DEVICE_NUMBER == 3 || DEVICE_NUMBER == 5)
+
 #define WIFI_CHANNEL_SWITCH_INTERVAL  (500)
 #define WIFI_CHANNEL_MAX               (11) // US has 11 channels
 
@@ -93,7 +95,7 @@ static void processMetadata(wifi_promiscuous_pkt_t *packet)
                + String(header->addr2[4], 16) + ":" + String(header->addr2[5], 16);
     doc["rssi"] = String(packet->rx_ctrl.rssi);;
     doc["label"] = ESP_LABEL;
-    doc["id"] = id;
+    doc["esp_id"] = id;
     char jsonBuffer[512];
     serializeJson(doc, jsonBuffer); 
 
@@ -115,3 +117,5 @@ void loop()
     wifi_set_channel(channel); 
     channel = (channel % WIFI_CHANNEL_MAX) + 1;
 }
+
+#endif
