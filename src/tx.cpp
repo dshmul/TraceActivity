@@ -12,8 +12,8 @@
 #define AWS_IOT_PUBLISH_TOPIC   "esp32/pub"
 #define AWS_IOT_SUBSCRIBE_TOPIC "esp32/sub"
 
-#if DEVICE_NUMBER == 2
-#define LED 2 // ESP32 DevKit V1 onboard LED
+#if DEVICE_NUMBER == 2  // ESP32 DevKit V1
+#define LED 2  
 #define RX_pin 16
 #define TX_pin 17
 
