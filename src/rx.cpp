@@ -121,7 +121,7 @@ static void processMetadata(wifi_promiscuous_pkt_t *packet)
 }
 
 /**
- * @brief Initialize serial communication and WIFI module
+ * @brief Initialize Serial communication and WIFI module
  * 
  * @details Called on device boot
  */

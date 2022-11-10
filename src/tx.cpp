@@ -33,6 +33,9 @@ static void connectAWS();
 static void publishMessage(String payload);
 static void messageHandler(char* topic, byte* payload, unsigned int length);
 
+/**
+ * @brief Connects to WIFI and AWS IoT Core
+ */
 void connectAWS()
 {
     WiFi.mode(WIFI_STA);
@@ -77,14 +80,26 @@ void connectAWS()
     Serial.println("AWS IoT Connected!");
 }
 
+/**
+ * @brief Publishes MQTT message to AWS IoT Core
+ * 
+ * @param payload message to be sent
+ */
 void publishMessage(String payload)
 {
-    Serial.print("Rx: ");
+    Serial.print("Tx: ");
     Serial.println(payload);
 
     client.publish(AWS_IOT_PUBLISH_TOPIC, payload.c_str());
 }
- 
+
+/**
+ * @brief Callback for messages received from AWS IoT Core
+ * 
+ * @param topic MQTT topic
+ * @param payload message
+ * @param length message length 
+ */
 void messageHandler(char* topic, byte* payload, unsigned int length)
 {
     Serial.print("incoming: ");
@@ -96,6 +111,11 @@ void messageHandler(char* topic, byte* payload, unsigned int length)
     Serial.println(message);
 }
 
+/**
+ * @brief Initialize Serial communication and AWS connection
+ * 
+ * @details Called on device boot
+ */
 void setup()
 {
     Serial.begin(115200);
@@ -107,9 +127,15 @@ void setup()
     connectAWS();
 }
 
+/**
+ * @brief Continuously read Serial data and publish if valid message is received
+ * 
+ * @details Enters loop after setup()
+ */
 void loop()
 {
     String storedData = "";
+
     if (SerialPort.available()) 
     { 
         while (SerialPort.available())         
@@ -130,7 +156,6 @@ void loop()
         }
     }
 
-    // Serial.print(storedData);
     if (storedData[0] == '{' && storedData[storedData.length() - 1] == '}')
     {
         publishMessage(storedData);
@@ -144,6 +169,7 @@ void loop()
             digitalWrite(LED, LOW);
         }
     }
+    
     storedData = "";
 }
 
