@@ -1,5 +1,5 @@
-#define DELAY_INTERVAL 30   // 30 seconds beetween channel cycling
-#define DEVICE_NUMBER 2
+#define DELAY_INTERVAL 60   // seconds beetween channel cycling
+#define DEVICE_NUMBER 1
 
 /*
     DEVICE_NUMBER Table

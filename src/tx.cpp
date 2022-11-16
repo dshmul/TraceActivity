@@ -134,6 +134,21 @@ void setup()
  */
 void loop()
 {
+    // If connection to AWS timed out, reconnect
+    if (!client.connected())
+    {
+        Serial.print("AWS IoT Timeout!");
+
+
+        while (!client.connect(THINGNAME))
+        {
+            Serial.print(".");
+            delay(100);
+        }
+
+        Serial.println();
+    }
+
     String storedData = "";
 
     if (SerialPort.available()) 
