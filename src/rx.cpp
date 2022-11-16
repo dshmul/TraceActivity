@@ -19,7 +19,7 @@
 
 HardwareSerial SerialPort(2);
  
-uint8_t channel = 1; // spends twice as long on channel 1 in the beginning
+uint8_t channel = 1; 
 
 const String id = WiFi.macAddress();
 
@@ -43,6 +43,9 @@ static void processMetadata(wifi_promiscuous_pkt_t *packet);
 static void wifi_packet_handler(void *packet_buff, wifi_promiscuous_pkt_type_t packet_type); // wifi_promiscuous_cb_t params
 static void wifi_set_channel(uint8_t wifi_channel);
 
+/**
+ * @brief Initialize WIFI module and set to promiscuous mode
+ */
 void trace_wifi_init()
 {
     wifi_init_config_t default_config = WIFI_INIT_CONFIG_DEFAULT();
@@ -54,11 +57,22 @@ void trace_wifi_init()
     ESP_ERROR_CHECK(esp_wifi_set_promiscuous_rx_cb(&wifi_packet_handler)); // set packet handler callback
 }
 
+/**
+ * @brief Set WIFI channel in 2.4 GHz bandwidth
+ * 
+ * @param channel WIFI channel ranging from 0 to 11 
+ */
 void wifi_set_channel(uint8_t channel)
 {
     ESP_ERROR_CHECK(esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE));
 }
 
+/**
+ * @brief Promiscuous mode callback, executed every time packet is received
+ * 
+ * @param packet_buff 
+ * @param packet_type 
+ */
 void wifi_packet_handler(void *packet_buff, wifi_promiscuous_pkt_type_t packet_type)
 {
     wifi_promiscuous_pkt_t *packet = (wifi_promiscuous_pkt_t *)packet_buff;
@@ -75,6 +89,11 @@ void wifi_packet_handler(void *packet_buff, wifi_promiscuous_pkt_type_t packet_t
     processMetadata(packet);
 }
 
+/**
+ * @brief Serializes data of interest and outputs to Serial ports
+ * 
+ * @param packet 
+ */
 static void processMetadata(wifi_promiscuous_pkt_t *packet)
 {
     wifi_ieee80211_packet_t *payload = (wifi_ieee80211_packet_t *)packet->payload;
@@ -89,7 +108,6 @@ static void processMetadata(wifi_promiscuous_pkt_t *packet)
     );
 
     StaticJsonDocument<200> doc;
-    // doc["chan"] = packet->rx_ctrl.channel;
     doc["mac"] = String(header->addr2[0], 16) + ":" + String(header->addr2[1], 16) + ":"
                + String(header->addr2[2], 16) + ":" + String(header->addr2[3], 16) + ":"
                + String(header->addr2[4], 16) + ":" + String(header->addr2[5], 16);
@@ -102,6 +120,11 @@ static void processMetadata(wifi_promiscuous_pkt_t *packet)
     SerialPort.println(jsonBuffer);
 }
 
+/**
+ * @brief Initialize Serial communication and WIFI module
+ * 
+ * @details Called on device boot
+ */
 void setup()
 {
     Serial.begin(115200);
@@ -111,6 +134,11 @@ void setup()
     trace_wifi_init();
 }
 
+/**
+ * @brief Cycles through WIFI channels
+ * 
+ * @details Enters loop after setup()
+ */
 void loop()
 {
     vTaskDelay(WIFI_CHANNEL_SWITCH_INTERVAL / portTICK_PERIOD_MS); 

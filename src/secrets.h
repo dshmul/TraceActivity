@@ -32,8 +32,8 @@ rqXRfboQnoZsG4q5WTP468SQvvG5
 #define SECRET
 #define THINGNAME "ESP32"                         //change this
  
-const char WIFI_SSID[] = "2207";               //change this
-const char WIFI_PASSWORD[] = "welovesteve";           //change this
+const char WIFI_SSID[] = "WhiteSky-Alight";               //change this
+const char WIFI_PASSWORD[] = "cpw2es4n";           //change this
  
 // Device Certificate                                               //change this
 static const char AWS_CERT_CRT[] PROGMEM = R"KEY(
