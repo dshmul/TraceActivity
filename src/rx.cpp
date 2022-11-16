@@ -144,12 +144,12 @@ void loop()
     vTaskDelay(WIFI_CHANNEL_SWITCH_INTERVAL / portTICK_PERIOD_MS); 
     wifi_set_channel(channel); 
 
-    // if (channel == WIFI_CHANNEL_MAX)
-    // {
-    //     ESP_ERROR_CHECK(esp_wifi_set_promiscuous(false));
-    //     delay(DELAY_INTERVAL * 1000);
-    //     ESP_ERROR_CHECK(esp_wifi_set_promiscuous(true));
-    // }
+    if (channel == WIFI_CHANNEL_MAX)
+    {
+        ESP_ERROR_CHECK(esp_wifi_set_promiscuous(false));
+        delay(DELAY_INTERVAL * 1000);
+        ESP_ERROR_CHECK(esp_wifi_set_promiscuous(true));
+    }
 
     channel = (channel % WIFI_CHANNEL_MAX) + 1;
 }
