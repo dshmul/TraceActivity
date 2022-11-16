@@ -33,6 +33,17 @@ static void connectAWS();
 static void publishMessage(String payload);
 static void messageHandler(char* topic, byte* payload, unsigned int length);
 
+volatile int interruptCounter;
+hw_timer_t* timer = NULL;
+portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
+
+void IRAM_ATTR onAlarm()
+{
+    portENTER_CRITICAL_ISR(&timerMux);
+    interruptCounter++;
+    portEXIT_CRITICAL_ISR(&timerMux);
+}
+
 /**
  * @brief Connects to WIFI and AWS IoT Core
  */
@@ -125,6 +136,11 @@ void setup()
     pinMode(LED, OUTPUT);
     
     connectAWS();
+
+    timer = timerBegin(0, 80, true);
+    timerAttachInterrupt(timer, &onAlarm, true);
+    timerAlarmWrite(timer, 1000000 * DELAY_INTERVAL, true); 
+    timerAlarmEnable(timer);
 }
 
 /**
@@ -134,10 +150,21 @@ void setup()
  */
 void loop()
 {
-    // If connection to AWS timed out, reconnect
+    if (interruptCounter > 0)
+    {
+        portENTER_CRITICAL(&timerMux);
+        interruptCounter--;
+        portEXIT_CRITICAL(&timerMux);
+
+        timerStop(timer);
+        Serial.println("================= DELAY TRIGGER ================");
+        delay(DELAY_INTERVAL * 1000 * 6);
+        timerStart(timer);
+    }
+    
     if (!client.connected())
     {
-        Serial.print("AWS IoT Timeout!");
+        Serial.println("AWS IoT Timeout!");
 
 
         while (!client.connect(THINGNAME))
@@ -145,8 +172,6 @@ void loop()
             Serial.print(".");
             delay(100);
         }
-
-        Serial.println();
     }
 
     String storedData = "";
