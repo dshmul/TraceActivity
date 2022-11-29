@@ -1,5 +1,5 @@
 #define DELAY_INTERVAL 10   // seconds beetween channel cycling
-#define DEVICE_NUMBER 2
+#define DEVICE_NUMBER 6
 
 /*
     DEVICE_NUMBER Table
@@ -11,9 +11,9 @@
     6 = Green Box TX
 */
 #if (DEVICE_NUMBER == 1 || DEVICE_NUMBER == 2)
-    #define ESP_LABEL "Dev1"
+    #define ESP_LABEL "Alight"
 #elif (DEVICE_NUMBER == 3 || DEVICE_NUMBER == 4)
-    #define ESP_LABEL "Dev2"
+    #define ESP_LABEL "2nd Ave"
 #else
-    #define ESP_LABEL "Dev3"
+    #define ESP_LABEL "Lab Hotspot"
 #endif
