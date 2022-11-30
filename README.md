@@ -9,8 +9,8 @@ The wifi module of the receiver is put into promiscuous mode, otherwise known as
 The transmitter wifi module is put into access point mode which allows it to connect to a network. It reads the probe request packets sent to it from the receiver device through UART and publishes it to AWS IoT Core using the MQTT protocol. 
 
 Directions to Flash Devices:
-2. In config.h file assign the respective device number
-3. Using [PlatformIO](https://platformio.org/install/ide), flash respective device
+1. In config.h file assign the respective device number
+2. Using [PlatformIO](https://platformio.org/install/ide), flash respective device
 
 Resources:
 - https://blog.podkalicki.com/esp32-wifi-sniffer/
