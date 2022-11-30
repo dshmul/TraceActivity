@@ -5,7 +5,7 @@
 #include "esp_wifi_types.h"
 #include "esp_wifi.h"
 #include "esp_err.h"
-#include "config.h"
+#include "../include/config.h"
 
 #if (DEVICE_NUMBER == 1 || DEVICE_NUMBER == 3 || DEVICE_NUMBER == 5)
 

@@ -1,11 +1,11 @@
 #include <Arduino.h>
-#include "secrets.h"
 #include <HardwareSerial.h>
 #include <WiFiClientSecure.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 #include <WiFi.h>
-#include "config.h"
+#include "../include/secrets.h"
+#include "../include/config.h"
 
 #if (DEVICE_NUMBER == 2 || DEVICE_NUMBER == 4 || DEVICE_NUMBER == 6)
  
