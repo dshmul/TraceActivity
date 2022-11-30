@@ -1,4 +1,5 @@
-#define DELAY_INTERVAL 10   // seconds beetween channel cycling
+#define DELAY_INTERVAL 60   // seconds beetween channel cycling
+#define CAPTURE_INTERVAL 10 // length of channel sweeping
 #define DEVICE_NUMBER 6
 
 /*

@@ -37,6 +37,9 @@ volatile int interruptCounter;
 hw_timer_t* timer = NULL;
 portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 
+/**
+ * @brief capture alarm interrupt service routine
+ */
 void IRAM_ATTR onAlarm()
 {
     portENTER_CRITICAL_ISR(&timerMux);
@@ -139,7 +142,7 @@ void setup()
 
     timer = timerBegin(0, 80, true);
     timerAttachInterrupt(timer, &onAlarm, true);
-    timerAlarmWrite(timer, 1000000 * DELAY_INTERVAL, true); 
+    timerAlarmWrite(timer, 1000000 * CAPTURE_INTERVAL, true); 
     timerAlarmEnable(timer);
 }
 
@@ -150,6 +153,7 @@ void setup()
  */
 void loop()
 {
+    // delay interval after capture period
     if (interruptCounter > 0)
     {
         portENTER_CRITICAL(&timerMux);
@@ -158,10 +162,11 @@ void loop()
 
         timerStop(timer);
         Serial.println("================= DELAY TRIGGER ================");
-        delay(DELAY_INTERVAL * 1000 * 6);
+        delay(DELAY_INTERVAL * 1000);
         timerStart(timer);
     }
     
+    // AWS timeout check --> reconnect
     if (!client.connected())
     {
         Serial.println("AWS IoT Timeout!");
@@ -174,6 +179,7 @@ void loop()
         }
     }
 
+    // enumerate serialized data
     String storedData = "";
 
     if (SerialPort.available()) 
@@ -196,6 +202,7 @@ void loop()
         }
     }
 
+    // publish if message is valid json string
     if (storedData[0] == '{' && storedData[storedData.length() - 1] == '}')
     {
         publishMessage(storedData);
